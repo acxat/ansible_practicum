@@ -1,0 +1,39 @@
+- name: "Initialise variables"
+  include_role:
+    name: geerlingguy.postgresql
+    tasks_from: "{{ item }}"
+  with_items:
+    - "variables"
+    - "setup-Debian"
+    - "initialize"
+
+- name: Start PostgreSQL server
+  systemd:
+    name: "{{ postgresql_daemon }}"
+    state: started
+
+- name: "Configure postgres"
+  include_role:
+    name: geerlingguy.postgresql
+    tasks_from: "{{ item }}"
+  with_items:
+    - "configure"
+    - "users"  
+
+- name: "Create user"
+  community.postgresql.postgresql_user:
+    name: "semaphore"
+    password: "semaphore"
+    state: present
+  become: true
+  become_user: postgres
+  become_method: sudo
+
+- name: "Create DB"
+  community.postgresql.postgresql_db:
+    name: "semaphore"
+    owner: "semaphore"
+    state: present
+  become: true
+  become_user: postgres
+  become_method: sudo

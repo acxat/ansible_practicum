@@ -1,0 +1,21 @@
+---
+- name: "Download Semaphore binary"
+  ansible.builtin.apt:
+    deb: "https://github.com/semaphoreui/semaphore/releases/download/v2.10.35/semaphore_2.10.35_linux_amd64.deb"
+
+- name: "Copy config.json to semaphore directory"
+  ansible.builtin.copy:
+    src: "files/{{ item.src }}"
+    dest: "{{ item.path }}"
+  with_items:
+    - src: "config.json"
+      path: "/etc/semaphore_config.json"
+    - src: "semaphore.service"
+      path: "/etc/systemd/system/semaphore.service"
+
+- name: "Start Semaphore service"
+  ansible.builtin.systemd:
+    name: semaphore
+    state: started
+    enabled: true
+    daemon_reload: true
